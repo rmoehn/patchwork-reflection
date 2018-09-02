@@ -41,13 +41,13 @@ Does permit drilling down into child and niece contexts.
 Repository contents
 -------------------
 
-- reflected-locked-pointer.txt CASO:
+- [reflected-locked-pointer.txt](reflected-locked-pointer.txt) CASO:
     - Answer pointer of the same subquestion both in the reflected and the
       actual context.
 
-- reflected-locked-pointer.edn CSR:
+- [reflected-locked-pointer.edn](reflected-locked-pointer.edn) CSR:
     - Same scenario as in reflected-locked-pointer.txt.
-    - Explores EDN representation,
+    - Explores EDN representation.
     - And path-based pointers.
     - And "unlocking" pointers of reflected contexts.
     - And age of reflected context.
