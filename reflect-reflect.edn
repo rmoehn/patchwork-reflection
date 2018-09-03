@@ -1,0 +1,139 @@
+;; - Very abbreviated.
+;; - Loop pointer mark. – Makes it easier to see what is going on. We might want
+;;   to be less extreme, though.
+;; - The nested case described in the email!
+;; - Looping pointers marked with :loop.
+
+"Where do [coconuts] grow?"
+
+{:q [:1 "Where do $2 grow?"]
+ :sq []}
+
+[:reflect]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s :lck
+       :age 1}}
+ :sq []}
+
+[:unlock :r1s]
+
+;; It becomes apparent that we have different variants of computation graph
+;; nodes. With/without result, with/without starting context and action. We have
+;; to be careful when implementing this not to create a maze of if-statements.
+
+;; Also we need to add type information. For example, in this input we
+;; recognize a locked action by it being a keyword. But in the code we'd want a
+;; variant type for that.
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act :c0a
+             :succ {:c1 :lck :r1 :loop}}
+       :age 2}}
+ :sq []}
+
+[:unlock :c0a]
+
+;; Here the root context is reflected as the successor of a special `root`
+;; action. We might not want that.
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 :lck :r1 :loop}}
+       :age 3}}
+ :sq []}
+
+[:unlock :c1]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:1 "Where do $2 grow?"]
+                         :sq []}
+                    :r1 :loop}}
+       :age 4}}
+ :sq []}
+
+;; :2 as a synonym for "$2"
+
+[:unlock :2]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:1 "Where do $2 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:2 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 5}}
+ :sq []}
+
+[:reflect]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:1 "Where do $2 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:2 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 6}
+  :r2 {:r2s :lck :age 1}}
+ :sq []}
+
+[:unlock :r2s]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:1 "Where do $2 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:2 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 8}
+  :r2 {:r2s {:start {:c3 :lck :r3 :lck}
+             :act :c3a
+             :succ {:c2 :lck :r2 :loop}
+             :othr []}
+       :age 2}}
+ :sq []}
+
+[:unlock :c2]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:1 "Where do $2 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:2 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 9}
+  :r2 {:r2s {:start {:c3 :lck :r3 :lck}
+             :act :c3a
+             :succ {:c2 {:q [:1 "Where do $2 grow?"]
+                         :comp
+                         {:r4 {:r4s {:act [:c5a [:root "Where do [coconuts] grow?"]]
+                                     :succ {:c4 {:q [:1 "Where do $2 grow?"]
+                                                 :sq []}
+                                            :r4 :loop
+                                            :ptr {:2 {:type :lck-ptr :cont "coconuts"}}}}
+                               :age 5}}
+                         :sq []}
+                    :r2 :loop}
+             :othr []}
+       :age 3}}
+ :sq []}
+
+;; Now we perhaps have a conflict between the content-addressed storage (data
+;; deduplication) and the snapshot nature of reflection.
+
+;; The question is: Should the pointers be renumbered or should they be the
+;; same?
+;; Aha, :r1 can't be the same, because it has different age.
+;; If we don't renumber :c1, it breaks the parallel numbering.
+;; Same for :r1s.
+;; I'm for renumbering. Data deduplication is still there through aliases.
+;; Hm…
