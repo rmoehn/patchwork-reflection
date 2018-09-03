@@ -11,6 +11,10 @@
 ;;   and braces) instead of indentation, the editor can auto-indent. This makes
 ;;   it easier to copy and paste.
 ;;
+;; Note that even though this is a "machine format", the data would not be fed
+;; 1:1 to the main algorithm. We'd have to transform it in order to make it
+;; easier to work with.
+;;
 ;; Possible alternatives:
 ;; - Org-mode
 ;; - YAML
@@ -19,6 +23,8 @@
 ;;
 ;; - Preserves relationships and avoids implementation-dependent numbering.
 ;; - Makes pointer access more verbose.
+;; - We could shorten the keys in order to make the whole easier on the eyes:
+;;   [:comp 3 :src :succ :cont :sq 0 :ans]
 
 ;;;; Unlocking pointers of reflected contexts
 ;;

@@ -3,7 +3,7 @@ Glossary
 
 ### CASO
 
-**C**ontext, **a**action, **s**uccessor context, **o**ther contexts. Reflection
+**C**ontext, **a**ction, **s**uccessor context, **o**ther contexts. Reflection
 graph format with this basic unit:
 
 ```
@@ -40,6 +40,9 @@ Does permit drilling down into child and niece contexts.
 
 Repository contents
 -------------------
+
+These files use a jumble of schemes and formats. This is bad for comprehension,
+but it lets us pick and choose.
 
 - [reflected-locked-pointer.txt](reflected-locked-pointer.txt) CASO:
     - Answer pointer of the same subquestion both in the reflected and the
