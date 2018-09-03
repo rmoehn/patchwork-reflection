@@ -1,0 +1,188 @@
+;;;; Explored ideas
+;;
+;; - The nested case: Reflecting a context that itself had reflected a context.
+;;   In this sample interaction the history is linear. Ie. there are no
+;;   sub-questions, only reflection.
+;; - Abbreviated syntax.
+;; - Marking pointers as :loop when they are recursive, ie. they're pointing at
+;;   the sub-graph that they're in.
+;; - Reflecting the root context with a pseudo-action :root.
+;; - Renumbering vs. pointer sharing.
+
+"Where do [coconuts] grow?"
+
+{:q [:1 "Where do $2 grow?"]
+ :sq []}
+
+[:reflect]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s :lck
+       :age 1}}
+ :sq []}
+
+[:unlock :r1s]
+
+;; It becomes apparent that we have different variants of computation graph
+;; nodes. With/without result, with/without starting context and action. We have
+;; to be careful when implementing this not to create a maze of if-statements.
+
+;; Also we need to add type information. For example, in this output we
+;; recognize a locked reflected action by it being a keyword. But in the code
+;; we'd want a variant type for that.
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act :c0a
+             :succ {:c1 :lck :r1 :loop}}
+       :age 2}}
+ :sq []}
+
+[:unlock :c0a]
+
+;; Here the root context is reflected as the successor of a special `root`
+;; action. We might not want that.
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 :lck :r1 :loop}}
+       :age 3}}
+ :sq []}
+
+[:unlock :c1]
+
+;; Current Patchwork would output the following context:
+;
+;{:q [:1 "Where do $2 grow?"]
+; :comp
+; {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+;             :succ {:c1 {:q [:1 "Where do $2 grow?"]
+;                         :sq []}
+;                    :r1 :loop}}
+;       :age 4}}
+; :sq []}
+;
+;; We see the same pointers in the reflected context as outside, because they
+;; point at the same data. However, this gets us in trouble with the next
+;; action, [:unlock :2]. Now it's not clear, should we unlock the outer pointer,
+;; or inspect the inner pointer, or both?
+;;
+;; Possible rule to avoid this: In reflected contexts, always renumber.
+;;
+;; This doesn't mean we have to give up content-addressedness or data
+;; deduplication. The addresses behind the different pointers can just be
+;; aliases for a single address.
+;;
+;; So from now on with renumbering…
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:3 "Where do $4 grow?"]
+                         :sq []}
+                    :r1 :loop}}
+       :age 4}}
+ :sq []}
+
+;; :4 as a synonym for "$4"
+[:unlock :4]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:3 "Where do $4 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:4 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 5}}
+ :sq []}
+
+[:reflect]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:3 "Where do $4 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:4 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 6}
+  :r2 {:r2s :lck :age 1}}
+ :sq []}
+
+[:unlock :r2s]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:3 "Where do $4 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:4 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 8}
+  :r2 {:r2s {:start {:c3 :lck :r3 :lck}
+             :act :c3a
+             :succ {:c2 :lck :r2 :loop}
+             :other []}
+       :age 2}}
+ :sq []}
+
+[:unlock :c2]
+
+{:q [:1 "Where do $2 grow?"]
+ :comp
+ {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+             :succ {:c1 {:q [:3 "Where do $4 grow?"]
+                         :sq []}
+                    :r1 :loop
+                    :ptr {:4 {:type :lck-ptr :cont "coconuts"}}}}
+       :age 9}
+  :r2 {:r2s {:start {:c3 :lck :r3 :lck}
+             :act :c3a
+             :succ {:c2 {:q [:5 "Where do $6 grow?"]
+                         :comp
+                         {:r4 {:r4s {:act [:c5a [:root "Where do [coconuts] grow?"]]
+                                     :succ {:c4 {:q [:7 "Where do $8 grow?"]
+                                                 :sq []}
+                                            :r4 :loop
+                                            :ptr {:8 {:type :lck-ptr :cont "coconuts"}}}}
+                               :age 5}}
+                         :sq []}
+                    :r2 :loop}
+             :other []}
+       :age 3}}
+ :sq []}
+
+;; In this case we can see an argument against the rule above: The reflected
+;; computation within :r2 is the same as :r1, except for the age. It might be
+;; useful for the user to know that they're the same.
+
+;; I wouldn't like an extra rule, but we could say: If a reflection pointer
+;; points to the same stuff at the same point in time as another reflection
+;; pointer in the current context, they will be shared. Somehow we'd have
+;; to deal with the conflicting age information, though.
+
+; {:q [:1 "Where do $2 grow?"]
+;  :comp
+;  {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+;              :succ {:c1 {:q [:3 "Where do $4 grow?"]
+;                          :sq []}
+;                     :r1 :loop
+;                     :ptr {:4 {:type :lck-ptr :cont "coconuts"}}}}
+;        :age 9}
+;   :r2 {:r2s {:start {:c3 :lck :r3 :lck}
+;              :act :c3a
+;              :succ {:c2 {:q [:5 "Where do $6 grow?"]
+;                          :comp {:r1 {:r1s {:act [:c0a [:root "Where do [coconuts] grow?"]]
+;                                            :succ {:c1 {:q [:3 "Where do $4 grow?"]
+;                                                        :sq []}
+;                                                   :r1 :loop
+;                                                   :ptr {:4 {:type :lck-ptr :cont "coconuts"}}}}
+;                                      :age 5}}  ; ← Conflict!
+;                          :sq []}
+;                     :r2 :loop}
+;              :other []}
+;        :age 3}}
+;  :sq []}

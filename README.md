@@ -38,8 +38,9 @@ Context
 
 Does permit drilling down into child and niece contexts.
 
-Repository contents
--------------------
+
+Repository content
+------------------
 
 These files use a jumble of schemes and formats. This is bad for comprehension,
 but it lets us pick and choose.
@@ -54,3 +55,11 @@ but it lets us pick and choose.
     - And path-based pointers.
     - And "unlocking" pointers of reflected contexts.
     - And age of reflected context.
+
+- [reflect-reflect.edn](reflect-reflect.edn) CSR:
+    - The nested case: Reflecting a context that itself had reflected a context.
+    - Abbreviated syntax.
+    - Marking pointers as :loop when they are recursive, ie. they're pointing at
+      the sub-graph that they're in.
+    - Reflecting the root context with a pseudo-action :root.
+    - Renumbering vs. pointer sharing.
