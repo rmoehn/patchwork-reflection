@@ -69,41 +69,43 @@
        :a2 :lck
        :w2 :lck}]}
 
-[:reflect]
+[:reply "$2 is best grown in $2 soil from the garden centre."]
 
 ; j
-{:q [:1 "Question about [$2: lettuce]. You might also consider: $3"]
+{:q [:1 "Root question."]
+ :sq [{:q1 "Question about [lettuce]. You might also consider: [ants]"
+       :a1 "[$2: lettuce] is best grown in [$2: lettuce] soil from the garden centre."
+       :w1 :lck}]}
+
+[:reflect]
+
+; k
+{:q [:1 "Root question."]
  :comp {:r1 {:r1s :lck
              :age 1}}
- :sq [{:q1 "What soil is best for growing [$2: lettuce]?"
-       :a1 "[$2: lettuce] growing soil from the garden centre."
-       :w1 :lck}
-      {:q2 "What is the benefit of eating [$2: lettuce]?"
-       :a2 :lck
-       :w2 :lck}]}
+ :sq [{:q1 "Question about [lettuce]. You might also consider: [ants]"
+       :a1 "[$2: lettuce] is best grown in [$2: lettuce] soil from the garden centre."
+       :w1 :lck}]}
 
 ;; Andreas' suggestion can't be adopted 1:1 maybe. Think about that.
 [:ask "Look at the part of computation $r1s that began with question $q1 and led
        to answer $a1. Did it expand all available pointers and if not, what would
        have been the result if it did?"]
 
-{:q [:1 "Question about [$2: lettuce]. You might also consider: $3"]
+{:q [:1 "Root question."]
  :comp {:r1 {:r1s :lck
              :age 2}}
- :sq [{:q1 "What soil is best for growing [$2: lettuce]?"
-       :a1 "[$2: lettuce] growing soil from the garden centre."
+ :sq [{:q1 "Question about [lettuce]. You might also consider: [ants]"
+       :a1 "[$2: lettuce] is best grown in [$2: lettuce] soil from the garden centre."
        :w1 :lck}
-      {:q2 "What is the benefit of eating [$2: lettuce]?"
+      {:q2 "Look … $r1s $q1 - $a1."
        :a2 :lck
-       :w2 :lck}
-      {:q3 "Look … $r1s $q1 - $a1."
-       :a3 :lck
-       :w3 :lck}]}
+       :w2 :lck}]}
 
-[:unlock :a3]
+[:unlock :a2]
 
-{:q [:1 "Look … comp. $2 question $3 - answer $4"]
- :sq []}k
+{:q [:1 "Look at … comp. $2 question $3 - answer $4"]
+ :sq []}
 
 [:unlock :2]
 
@@ -118,7 +120,7 @@
 
 [:unlock :4]
 
-{:q [:1 "Look … comp. $2 question $3 - answer [$4: $5 growing soil from the garden centre.]"]
+{:q [:1 "Look … comp. $2 question $3 - answer [$4: $5 is best grown in $5 growing soil from the garden centre.]"]
  :2 {:start {:c1 :lck :c1r :lck}
      :act :c1a
      :other [{:c2 :lck :c2r}]}
@@ -126,7 +128,7 @@
 
 [:unlock :5]
 
-{:q [:1 "Look … comp. $2 question $3 - answer [$4: [$5: lettuce] growing soil from the garden centre.]"]
+{:q [:1 "Look … comp. $2 question $3 - answer [$4: [$5: lettuce] is best grown in [$5: lettuce] growing soil from the garden centre.]"]
  :2 {:start {:c1 :lck :c1r :lck}
      :act :c1a
      :other [{:c2 :lck :c2r}]}
@@ -137,30 +139,57 @@
 {:q [:1 "Look … comp. $2 question $3 - answer [$4: [$5: lettuce] growing soil from the garden centre.]"]
  :2 {:start {:c1 :lck :c1r :lck}
      :act :c1a
-     :other [{:c2 {:q [:6 "Question about [$7: lettuce]. You might also consider: $8"]
-                   :sq [{:q1 "What soil is best for growing [$7: lettuce]?"
-                         :a1 "[$7: lettuce] growing soil from the garden centre."
-                         :w1 :lck}
-                        {:q2 "What is the benefit of eating [$7: lettuce]?"
-                         :a2 :lck
-                         :w2 :lck}]}
+     :other [{:c2 {:q [:6 "Root question."]
+                   :sq [{:q1 "Question about [lettuce]. You might also consider: [ants]"
+                         :a1 "[$7: lettuce] is best grown in [$7: lettuce] soil from the garden centre."
+                         :w1 :lck}]}
               :lck :c2r}]}
  :sq []}
 
-[:unlock :c1]
+[:unlock :c1 :c1a]
 
 {:q [:1 "Look … comp. $2 question $3 - answer [$4: [$5: lettuce] growing soil from the garden centre.]"]
- :2 {:start {:c1 :lck :c1r :lck}
-     :act :c1a
-     :other [{:c2 {:q [:6 "Question about [$7: lettuce]. You might also consider: $8"]
-                   :sq [{:q1 "What soil is best for growing [$7: lettuce]?"
-                         :a1 "[$7: lettuce] growing soil from the garden centre."
-                         :w1 :lck}
-                        {:q2 "What is the benefit of eating [$7: lettuce]?"
-                         :a2 :lck
-                         :w2 :lck}]}
+ :2 {:start {:c1 {:q [:8 "Question about [$9: lettuce]. You might also consider: $10"]
+                  :sq [{:q1 "What soil is best for growing [$9: lettuce]?"
+                        :a1 "[$9: lettuce] growing soil from the garden centre."
+                        :w1 :lck}
+                       {:q2 "What is the benefit of eating [$9: lettuce]?"
+                        :a2 :lck
+                        :w2 :lck}]} :c1r :lck}
+     :act [:c1a [:reply "$9 is best grown in $9 soil from the garden centre."]]
+     :other [{:c2 {:q [:6 "Root question."]
+                   :sq [{:q1 "Question about [lettuce]. You might also consider: [ants]"
+                         :a1 "[$7: lettuce] is best grown in [$7: lettuce] soil from the garden centre."
+                         :w1 :lck}]}
               :lck :c2r}]}
  :sq []}
 
-{:q [:1 "What soil is best for growing [$2: lettuce]?"]
+;; It's becoming hard to deal with. But actually there's not that much left.
+
+[:unlock :3]
+
+{:q [:1 "Look … comp. $2 question [$3: Question about [$5: lettuce]. You might also consider: $3]
+        - answer [$4: [$5: lettuce] growing soil from the garden centre.]"]
+ :2 {:start {:c1 {:q [:8 "Question about [$9: lettuce]. You might also consider: $10"]
+                  :sq [{:q1 "What soil is best for growing [$9: lettuce]?"
+                        :a1 "[$9: lettuce] growing soil from the garden centre."
+                        :w1 :lck}
+                       {:q2 "What is the benefit of eating [$9: lettuce]?"
+                        :a2 :lck
+                        :w2 :lck}]} :c1r :lck}
+     :act [:c1a [:reply "$9 is best grown in $9 soil from the garden centre."]]
+     :other [{:c2 {:q [:6 "Root question."]
+                   :sq [{:q1 "Question about [lettuce]. You might also consider: [ants]"
+                         :a1 "[$7: lettuce] is best grown in [$7: lettuce] soil from the garden centre."
+                         :w1 :lck}]}
+              :lck :c2r}]}
  :sq []}
+
+
+;; - Do I need to drill all the way up where we first had a question for the
+;;   context?
+;; - Which pointers do we mean? All available pointers, including the workspace
+;;   pointers? Not unlocked answers? Just the pointers in the question?
+;; - How would we do it? Re-ask the question and add "make sure to unlock all
+;;   pointers in the question". Then reply with the answer to that, which takes
+;;   us back to the first workspace.
