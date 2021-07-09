@@ -1,0 +1,148 @@
+;;;; EDN
+;;
+;; It's tedious to write and format sample interactions in the original
+;; Patchwork format. Using EDN has these advantages:
+;; - readers and writers exist for different programming languages:
+;;   https://github.com/edn-format/edn/wiki/Implementations
+;; - Reasonably human-readable and -writable. Requires fewer punctuation
+;;   characters than JSON or Python data literals.
+;; - Easy editing with paredit.
+;; - Because the structure is expressed through punctuation (parens, brackets
+;;   and braces) instead of indentation, the editor can auto-indent. This makes
+;;   it easier to copy and paste.
+;;
+;; Note that even though this is a "machine format", the data would not be fed
+;; 1:1 to the main algorithm. We'd have to transform it in order to make it
+;; easier to work with.
+;;
+;; Possible alternatives:
+;; - Org-mode
+;; - YAML
+
+;;;; Path-based pointers
+;;
+;; - Preserves relationships and avoids implementation-dependent numbering.
+;; - Makes pointer access more verbose.
+;; - We could shorten the keys in order to make the whole easier on the eyes:
+;;   [:comp 3 :src :succ :cont :sq 0 :ans]
+
+;;;; Unlocking pointers of reflected contexts
+;;
+;; - Reflected contexts are immutable, so we can't output them with a unlocked
+;;   pointer that was locked before.
+;; - Also, it might be useful to know whether a pointer pointed to data or to a
+;;   promise and which promisees there were at the time.
+;; - So introduce a pad that shows information about pointers from reflected
+;;   contexts.
+
+
+;;;; Showing the age of reflected contexts
+;;
+;; - I don't yet know if that gives enough information about where a reflected
+;;   context belongs to/came from.
+;; - In order to save some characters, the age information counter
+;;   also serves as a key in the :computations map. This might or might not be
+;;   good. Alternative: {:computations [{:source … :result … :age …)}}.
+
+;; In this sample and all the previous ones, the computation pointer is a magic
+;; pointer – unlocking it magically adds a computation graph to the list of
+;; computation graphs. Instead, it would be better to have a `reflect` action.
+
+; What is your root question?
+"What is the capital of [Assyria]?"
+
+{:question "What is the capital of $0?"
+ :computation :locked
+ :subquestions []}
+
+[:ask "Which continent is [:question $0] on?"]
+
+{:question "What is the capital of $0?"
+ :computation :locked
+ :subquestions
+ [{:question "What continent is [:question $0] on?"
+   :answer :locked
+   :workspace :locked}]}
+
+[:unlock [:computation]]
+
+{:question "What is the capital of $0?"
+ :computation :locked
+ :computations
+ {1 {:source :locked
+     :result :locked}}
+ :subquestions
+ [{:question "What continent is [:question $0] on?"
+   :answer :locked
+   :workspace :locked}]}
+
+[:unlock [:computations 1 :source]]
+
+{:question "What is the capital of $0?"
+ :computation :locked
+ :computations
+ {2 {:source
+     {:start {:content :locked :computation :locked}
+      :action :locked
+      :successor {:content :locked :computation :locked}
+      :other [{:content :locked :computation :locked}]}
+     :result :locked}}
+ :subquestions
+ [{:question "What continent is [:question $0] on?"
+   :answer :locked
+   :workspace :locked}]}
+
+[:unlock [:computation 2 :source :successor :content]]
+
+{:question "What is the capital of $0?"
+ :computation :locked
+ :computations
+ {3 {:source
+     {:start :locked
+      :action :locked
+      :successor
+      {:content
+       {:question "What is the capital of $0?"
+        :computation :locked
+        :subquestions
+        [{:question "What continent is [:question $0] on?"
+          :answer :locked
+          :workspace :locked}]}
+       :computation :locked}
+      :other [{:content :locked :computation :locked}]}
+     :result :locked}}
+ :subquestions
+ [{:question "What continent is [:question $0] on?"
+   :answer :locked
+   :workspace :locked}]}
+
+; In the original scenario we do this, but this is boring, so don't follow this
+; path.
+[:unlock [:subquestions 0 :answer]]
+
+; More interesting:
+[:unlock [:computations 3 :source :successor :content :subquestions 0 :answer]]
+
+{:question "What is the capital of $0?"
+ :computation :locked
+ :computations
+ {4 {:source
+     {:start :locked
+      :action :locked
+      :successor
+      {:content
+       {:question "What is the capital of $0?"
+        :computation :locked
+        :subquestions
+        [{:question "What continent is [:question $0] on?"
+          :answer :locked
+          :workspace :locked}]}
+       :computation :locked
+       :pointers
+       {[:subquestions 0 :answer] {:type :promise :promisees []}}}
+      :other [{:content :locked :computation :locked}]}
+     :result :locked}}
+ :subquestions
+ [{:question "What continent is [:question $0] on?"
+   :answer :locked
+   :workspace :locked}]}

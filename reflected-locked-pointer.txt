@@ -1,0 +1,88 @@
+# Leaving out the scratchpad, because I won't use it.
+
+What is your root question?
+> What is the capital of [Assyria]?
+a
+Question: [$1: What is the capital of $3?]
+Computation: $r1
+Subquestions:
+
+
+> ask Which continent is $3 on?
+b
+Question: [$1: What is the capital of $3?]
+Computation: $r1
+Subquestions:
+    1.
+    [$q1: Which continent is $3 on?]
+    $a1
+    $w1
+
+
+> unlock $r1
+c
+Question: [$1: What is the capital of $3?]
+Computation: $r1
+Unlocked computation: [$r2: Previous context: $c3 $r3
+                            Action: $s1                         (ask Which continent is $3 on?)
+                            Successor context: $c4 (seed)
+                            Other contexts:
+                                1. $c5 $r5]
+Subquestions:
+    1.
+    [$q1: Which continent is $3 on?]
+    $a1
+    $w1
+
+> unlock $c4
+d
+Question: [$1: What is the capital of $3?]
+Computation: $r1
+Unlocked computation: [$r2: Previous context: $c3 $r3
+                            Action: $s1                         (ask Which continent is $3 on?)
+                            Successor context: [$c4: Question: What is the capital of $3?
+                                                     Computation: $r1
+                                                     Subquestions:
+                                                         1.
+                                                         [$q1: Which continent is $3 on?]
+                                                         $a1 → =$a1
+                                                         $w1] (seed)
+                            Other contexts:
+                                1. $c5 $r5]
+Subquestions:
+    1.
+    [$q1: Which continent is $3 on?]
+    $a1
+    $w1
+
+> unlock $a1
+e
+# Leaving out the other context.
+
+Question: [$1: What is the capital of $3?]
+Computation: $r1
+Unlocked computation: [$r2: Previous context: $c3 $r3
+                            Action: $s1                         (ask Which continent is $3 on?)
+                            Successor context: [$c4: Question: What is the capital of $3?
+                                                     Computation: $r1
+                                                     Subquestions:
+                                                         1.
+                                                         [$q1: Which continent is $3 on?]
+                                                         $a2 → =$a1
+                                                         $w1] (seed)
+                            Other contexts:
+                                1. $c5 $r5]
+Subquestions:
+    1.
+    [$q1: Which continent is $3 on?]
+    [$a1: Asia]
+    $w1
+
+
+# But actually I wanted a different scenario. → reflected-locked-pointer-2.txt
+# Where the unresolved pointer is not also one of the sub-question answers.
+# Then it should be fine to pass it, but not to unlock it.
+
+# → shows a modification to clarify that pointers in reflected contexts can't be
+# unlocked. In this case it allows us to maintain the textual association
+# between the two occurrences of the same pointer.
